@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Electricity Bill Calculator</title>
+  <style>
+    :root {
+      --primary-bg: #2d2d2d;
+      --secondary-bg: #3d3d3d;
+      --text-color: #ffffff;
+      --button-bg: #d0d0d0;
+      --button-hover: #e0e0e0;
+      --button-text: #000000;
+      --border-color: #555555;
+      --highlight: #4682B4;
+    }
+    
+    body {
+      font-family: Arial, sans-serif;
+      background-color: var(--primary-bg);
+      color: var(--text-color);
+      margin: 0;
+      padding: 0;
+      line-height: 1.6;
+    }
+    
+    .container {
+      width: 90%;
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    
+    .input-card {
+      background-color: var(--secondary-bg);
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+    
+    .form-group {
+      margin-bottom: 15px;
+    }
+    
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    
+    input, select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      background-color: var(--primary-bg);
+      color: var(--text-color);
+      box-sizing: border-box;
+    }
+    
+    input:disabled {
+      background-color: #444;
+    }
+    
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+    
+    button {
+      padding: 10px 15px;
+      border: none;
+      border-radius: 4px;
+      background-color: var(--button-bg);
+      color: var(--button-text);
+      cursor: pointer;
+      font-weight: bold;
+      flex: 1;
+    }
+    
+    button:hover {
+      background-color: var(--button-hover);
+    }
+    
+    .tariff-info {
+      background-color: var(--secondary-bg);
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+    
+    #tariffScheme {
+      white-space: pre-line;
+      line-height: 1.5;
+    }
+    
+    .result-card {
+      background-color: var(--secondary-bg);
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+    
+    .result-item {
+      margin-bottom: 10px;
+    }
+    
+    .total-bill {
+      font-size: 1.2em;
+      font-weight: bold;
+      color: var(--highlight);
+      margin-top: 10px;
+    }
+    
+    .details-container {
+      background-color: var(--secondary-bg);
+      border-radius: 8px;
+      padding: 20px;
+      margin-top: 20px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      display: none;
+    }
+    
+    #calculationDetails {
+      white-space: pre-line;
+      line-height: 1.5;
+    }
+    
+    @media (max-width: 600px) {
+      .container {
+        width: 95%;
+        padding: 10px;
+      }
+      
+      .button-group {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Electricity Bill Calculator</h1>
+    
+    <div class="input-card">
+      <div class="form-group">
+        <label for="category">Consumer Category:</label>
+        <select id="category">
+          <option value="Kutir Jyoti">Kutir Jyoti</option>
+          <option value="Domestic Others" selected>Domestic Others</option>
+          <option value="General Purpose">General Purpose</option>
+          <option value="Specified Public Purpose">Specified Public Purpose</option>
+        </select>
+      </div>
+      
+      <div class="form-group">
+        <label for="prevReading">Previous Meter Reading:</label>
+        <input type="number" id="prevReading" min="0" step="0.01">
+      </div>
+      
+      <div class="form-group">
+        <label for="currReading">Current Meter Reading:</label>
+        <input type="number" id="currReading" min="0" step="0.01">
+      </div>
+      
+      <div class="form-group">
+        <label for="units">Units Consumed:</label>
+        <input type="number" id="units" disabled>
+      </div>
+      
+      <div class="form-group">
+        <label for="connectedLoad">Connected Load (kW) (Optional):</label>
+        <input type="number" id="connectedLoad" min="0.1" step="0.1" value="1">
+      </div>
+      
+      <div class="button-group">
+        <button id="calculateUnitsBtn">Calculate Units</button>
+        <button id="calculateBillBtn">Calculate Bill</button>
+      </div>
+    </div>
+    
+    <div class="tariff-info">
+      <h3>Tariff Scheme:</h3>
+      <div id="tariffScheme"></div>
+    </div>
+    
+    <div class="result-card">
+      <h3>Bill Summary:</h3>
+      <div class="result-item" id="energyCharge">Energy Charge: ₹0.00</div>
+      <div class="result-item" id="mmfc">Monthly Minimum Fixed Charge: ₹0.00</div>
+      <div class="total-bill" id="totalBill">Total Bill: ₹0.00</div>
+      
+      <button id="toggleDetailsBtn">Show Calculation Details</button>
+      
+      <div id="detailsContainer" class="details-container">
+        <div id="calculationDetails"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Tariff data
+    const tariffs = {
+      "Kutir Jyoti": {
+        "energy_charge": {
+          "all": 0  // Energy charge not visible in image
+        },
+        "mmfc_first_kw": 70,
+        "mmfc_additional_kw": 0  // Not specified in image
+      },
+      "Domestic Others": {
+        "energy_charge": {
+          "<=50": 2.90,
+          ">50,<=200": 4.70,
+          ">200,<=400": 5.70,
+          ">400": 6.10
+        },
+        "mmfc_first_kw": 20,
+        "mmfc_additional_kw": 20
+      },
+      "General Purpose": {
+        "energy_charge": {
+          "<=100": 5.90,
+          ">100,<=300": 7.00,
+          ">300": 7.60
+        },
+        "mmfc_first_kw": 30,
+        "mmfc_additional_kw": 30
+      },
+      "Specified Public Purpose": {
+        "energy_charge": {
+          "all": 6.20
+        },
+        "mmfc_first_kw": 50,
+        "mmfc_additional_kw": 50
+      }
+    };
+
+    // Get DOM elements
+    const categorySelect = document.getElementById('category');
+    const prevReadingInput = document.getElementById('prevReading');
+    const currReadingInput = document.getElementById('currReading');
+    const unitsInput = document.getElementById('units');
+    const connectedLoadInput = document.getElementById('connectedLoad');
+    const calculateUnitsBtn = document.getElementById('calculateUnitsBtn');
+    const calculateBillBtn = document.getElementById('calculateBillBtn');
+    const tariffSchemeDiv = document.getElementById('tariffScheme');
+    const energyChargeDiv = document.getElementById('energyCharge');
+    const mmfcDiv = document.getElementById('mmfc');
+    const totalBillDiv = document.getElementById('totalBill');
+    const toggleDetailsBtn = document.getElementById('toggleDetailsBtn');
+    const detailsContainer = document.getElementById('detailsContainer');
+    const calculationDetailsDiv = document.getElementById('calculationDetails');
+
+    // Update tariff scheme display when category changes
+    function updateTariffDisplay() {
+      const category = categorySelect.value;
+      const tariff = tariffs[category];
+      
+      let tariffText = `Energy Charges (${category}):\n`;
+      
+      if (category === "Kutir Jyoti") {
+        tariffText += `All units: ₹${tariff.energy_charge.all}/unit\n`;
+      } else if (category === "Domestic Others") {
+        tariffText += `First 50 units: ₹${tariff.energy_charge['<=50']}/unit\n`;
+        tariffText += `Next 150 units (>50, <=200): ₹${tariff.energy_charge['>50,<=200']}/unit\n`;
+        tariffText += `Next 200 units (>200, <=400): ₹${tariff.energy_charge['>200,<=400']}/unit\n`;
+        tariffText += `Remaining units (>400): ₹${tariff.energy_charge['>400']}/unit\n`;
+      } else if (category === "General Purpose") {
+        tariffText += `First 100 units: ₹${tariff.energy_charge['<=100']}/unit\n`;
+        tariffText += `Next 200 units (>100, <=300): ₹${tariff.energy_charge['>100,<=300']}/unit\n`;
+        tariffText += `Remaining units (>300): ₹${tariff.energy_charge['>300']}/unit\n`;
+      } else if (category === "Specified Public Purpose") {
+        tariffText += `All units: ₹${tariff.energy_charge.all}/unit\n`;
+      }
+      
+      tariffText += `\nMonthly Fixed Charge: ₹${tariff.mmfc_first_kw} for first kW`;
+      if (tariff.mmfc_additional_kw > 0) {
+        tariffText += `, ₹${tariff.mmfc_additional_kw} for each additional kW`;
+      }
+      
+      tariffSchemeDiv.textContent = tariffText;
+    }
+
+    // Calculate units from meter readings
+    function calculateUnits() {
+      const prevReading = parseFloat(prevReadingInput.value);
+      const currReading = parseFloat(currReadingInput.value);
+      
+      if (isNaN(prevReading) || isNaN(currReading)) {
+        alert("Please enter valid numbers for meter readings");
+        return false;
+      }
+      
+      if (currReading < prevReading) {
+        alert("Current reading cannot be less than previous reading");
+        return false;
+      }
+      
+      const units = currReading - prevReading;
+      unitsInput.value = units.toFixed(2);
+      return true;
+    }
+
+    // Calculate electricity bill
+    function calculateBill() {
+      // Check if units are calculated
+      if (!unitsInput.value) {
+        const unitsCalculated = calculateUnits();
+        if (!unitsCalculated) return;
+      }
+      
+      const category = categorySelect.value;
+      const units = parseFloat(unitsInput.value);
+      let connectedLoad = parseFloat(connectedLoadInput.value);
+      
+      if (isNaN(connectedLoad) || connectedLoad <= 0) {
+        connectedLoad = 1.0;
+        connectedLoadInput.value = "1.0";
+      }
+      
+      if (units < 0) {
+        alert("Units must be a positive number");
+        return;
+      }
+      
+      const result = calculateBillDetails(category, units, connectedLoad);
+      
+      // Update results
+      energyChargeDiv.textContent = `Energy Charge: ₹${result.energy_charge.toFixed(2)}`;
+      mmfcDiv.textContent = `Monthly Minimum Fixed Charge: ₹${result.mmfc.toFixed(2)}`;
+      totalBillDiv.textContent = `Total Bill: ₹${result.total.toFixed(2)}`;
+      
+      // Update details
+      let detailsText = `Calculation Details:\n\n`;
+      detailsText += `Consumer Category: ${category}\n`;
+      detailsText += `Units Consumed: ${units}\n`;
+      detailsText += `Connected Load: ${connectedLoad} kW\n\n`;
+      
+      result.explanation.forEach(line => {
+        detailsText += `${line}\n`;
+      });
+      
+      detailsText += `\nTotal Bill: ₹${result.total.toFixed(2)}`;
+      calculationDetailsDiv.textContent = detailsText;
+    }
+
+    // Function to calculate bill details
+    function calculateBillDetails(category, units, connectedLoad) {
+      const tariff = tariffs[category];
+      let energyCharge = 0;
+      const explanation = [];
+      
+      if (category === "Kutir Jyoti") {
+        energyCharge = units * tariff.energy_charge.all;
+        explanation.push(`Energy Charge: ${units} units × ₹${tariff.energy_charge.all}/kWh = ₹${energyCharge.toFixed(2)}`);
+      } else if (category === "Domestic Others") {
+        if (units <= 50) {
+          energyCharge = units * tariff.energy_charge['<=50'];
+          explanation.push(`Energy Charge: ${units} units × ₹${tariff.energy_charge['<=50']}/kWh = ₹${energyCharge.toFixed(2)}`);
+        } else if (units <= 200) {
+          const firstTier = 50 * tariff.energy_charge['<=50'];
+          const secondTier = (units - 50) * tariff.energy_charge['>50,<=200'];
+          energyCharge = firstTier + secondTier;
+          explanation.push(`Energy Charge for first 50 units: 50 units × ₹${tariff.energy_charge['<=50']}/kWh = ₹${firstTier.toFixed(2)}`);
+          explanation.push(`Energy Charge for next ${units - 50} units: ${(units - 50).toFixed(2)} units × ₹${tariff.energy_charge['>50,<=200']}/kWh = ₹${secondTier.toFixed(2)}`);
+        } else if (units <= 400) {
+          const firstTier = 50 * tariff.energy_charge['<=50'];
+          const secondTier = 150 * tariff.energy_charge['>50,<=200'];
+          const thirdTier = (units - 200) * tariff.energy_charge['>200,<=400'];
+          energyCharge = firstTier + secondTier + thirdTier;
+          explanation.push(`Energy Charge for first 50 units: 50 units × ₹${tariff.energy_charge['<=50']}/kWh = ₹${firstTier.toFixed(2)}`);
+          explanation.push(`Energy Charge for next 150 units: 150 units × ₹${tariff.energy_charge['>50,<=200']}/kWh = ₹${secondTier.toFixed(2)}`);
+          explanation.push(`Energy Charge for next ${(units - 200).toFixed(2)} units: ${(units - 200).toFixed(2)} units × ₹${tariff.energy_charge['>200,<=400']}/kWh = ₹${thirdTier.toFixed(2)}`);
+        } else {
+          const firstTier = 50 * tariff.energy_charge['<=50'];
+          const secondTier = 150 * tariff.energy_charge['>50,<=200'];
+          const thirdTier = 200 * tariff.energy_charge['>200,<=400'];
+          const fourthTier = (units - 400) * tariff.energy_charge['>400'];
+          energyCharge = firstTier + secondTier + thirdTier + fourthTier;
+          explanation.push(`Energy Charge for first 50 units: 50 units × ₹${tariff.energy_charge['<=50']}/kWh = ₹${firstTier.toFixed(2)}`);
+          explanation.push(`Energy Charge for next 150 units: 150 units × ₹${tariff.energy_charge['>50,<=200']}/kWh = ₹${secondTier.toFixed(2)}`);
+          explanation.push(`Energy Charge for next 200 units: 200 units × ₹${tariff.energy_charge['>200,<=400']}/kWh = ₹${thirdTier.toFixed(2)}`);
+          explanation.push(`Energy Charge for remaining ${(units - 400).toFixed(2)} units: ${(units - 400).toFixed(2)} units × ₹${tariff.energy_charge['>400']}/kWh = ₹${fourthTier.toFixed(2)}`);
+        }
+      } else if (category === "General Purpose") {
+        if (units <= 100) {
+          energyCharge = units * tariff.energy_charge['<=100'];
+          explanation.push(`Energy Charge: ${units} units × ₹${tariff.energy_charge['<=100']}/kWh = ₹${energyCharge.toFixed(2)}`);
+        } else if (units <= 300) {
+          const firstTier = 100 * tariff.energy_charge['<=100'];
+          const secondTier = (units - 100) * tariff.energy_charge['>100,<=300'];
+          energyCharge = firstTier + secondTier;
+          explanation.push(`Energy Charge for first 100 units: 100 units × ₹${tariff.energy_charge['<=100']}/kWh = ₹${firstTier.toFixed(2)}`);
+          explanation.push(`Energy Charge for next ${(units - 100).toFixed(2)} units: ${(units - 100).toFixed(2)} units × ₹${tariff.energy_charge['>100,<=300']}/kWh = ₹${secondTier.toFixed(2)}`);
+        } else {
+          const firstTier = 100 * tariff.energy_charge['<=100'];
+          const secondTier = 200 * tariff.energy_charge['>100,<=300'];
+          const thirdTier = (units - 300) * tariff.energy_charge['>300'];
+          energyCharge = firstTier + secondTier + thirdTier;
+          explanation.push(`Energy Charge for first 100 units: 100 units × ₹${tariff.energy_charge['<=100']}/kWh = ₹${firstTier.toFixed(2)}`);
+          explanation.push(`Energy Charge for next 200 units: 200 units × ₹${tariff.energy_charge['>100,<=300']}/kWh = ₹${secondTier.toFixed(2)}`);
+          explanation.push(`Energy Charge for remaining ${(units - 300).toFixed(2)} units: ${(units - 300).toFixed(2)} units × ₹${tariff.energy_charge['>300']}/kWh = ₹${thirdTier.toFixed(2)}`);
+        }
+      } else if (category === "Specified Public Purpose") {
+        energyCharge = units * tariff.energy_charge.all;
+        explanation.push(`Energy Charge: ${units} units × ₹${tariff.energy_charge.all}/kWh = ₹${energyCharge.toFixed(2)}`);
+      }
+      
+      // Calculate MMFC (Monthly Minimum Fixed Charge)
+      let mmfc = 0;
+      if (connectedLoad <= 1) {
+        mmfc = tariff.mmfc_first_kw;
+        explanation.push(`Monthly Minimum Fixed Charge: ₹${tariff.mmfc_first_kw} for first kW or part`);
+      } else {
+        mmfc = tariff.mmfc_first_kw + (connectedLoad - 1) * tariff.mmfc_additional_kw;
+        explanation.push(`Monthly Minimum Fixed Charge: ₹${tariff.mmfc_first_kw} for first kW + ₹${tariff.mmfc_additional_kw} × ${(connectedLoad - 1).toFixed(2)} for additional kW = ₹${mmfc.toFixed(2)}`);
+      }
+      
+      // Calculate total bill
+      const total = energyCharge + mmfc;
+      
+      return {
+        energy_charge: energyCharge,
+        mmfc: mmfc,
+        total: total,
+        explanation: explanation
+      };
+    }
+
+    // Toggle calculation details
+    function toggleDetails() {
+      if (detailsContainer.style.display === 'block') {
+        detailsContainer.style.display = 'none';
+        toggleDetailsBtn.textContent = 'Show Calculation Details';
+      } else {
+        detailsContainer.style.display = 'block';
+        toggleDetailsBtn.textContent = 'Hide Calculation Details';
+      }
+    }
+
+    // Initialize app
+    function initApp() {
+      // Set default tariff display
+      updateTariffDisplay();
+      
+      // Event listeners
+      categorySelect.addEventListener('change', updateTariffDisplay);
+      calculateUnitsBtn.addEventListener('click', calculateUnits);
+      calculateBillBtn.addEventListener('click', calculateBill);
+      toggleDetailsBtn.addEventListener('click', toggleDetails);
+    }
+
+    // Initialize when DOM is loaded
+    document.addEventListener('DOMContentLoaded', initApp);
+  </script>
+</body>
+</html>
